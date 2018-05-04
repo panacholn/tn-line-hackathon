@@ -11,7 +11,7 @@ exports.helloWorld = functions.https.onRequest((request, response) => {
  response.send("Hello from Firebase!");
 });
 
-exports.getMessageFromLine = functions.https.onRequest(middleware(config),(request, response) => {
+exports.getMessageFromLine = functions.https.onRequest((request, response) => {
   const strDate = moment().zone('+0700').format('YYYY-MM-DD');
   const staticUser = []
   staticUser['U09470b75b2cb22d87f1a5efaa1163129'] = 'tu'
@@ -24,10 +24,9 @@ exports.getMessageFromLine = functions.https.onRequest(middleware(config),(reque
   const userId = data.source.userId;
   const messageType = data.message.type;
   let messageText = data.message.text.trim();
-
   if(messageType==="text") {
     if(messageText.startsWith('#daily')){
-      const user = staticUser[userId]
+      const user = staticUser[userId] || 'ton'
       const text = {message: messageText.replace("#daily", user)}
 
       admin.database().ref('daily/'+strDate+'/'+user).set(text)
