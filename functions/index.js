@@ -1,15 +1,14 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const moment = require('moment')
+const firebase = require('firebase');
+
 
 admin.initializeApp(functions.config().firebase);
 
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
-exports.helloWorld = functions.https.onRequest((request, response) => {
- response.send("Hello from Firebase!");
-});
 
 exports.getMessageFromLine = functions.https.onRequest((request, response) => {
   const strDate = moment().zone('+0700').format('YYYY-MM-DD');
@@ -39,3 +38,25 @@ exports.getMessageFromLine = functions.https.onRequest((request, response) => {
     }
   }
  });
+
+
+exports.get = functions.https.onRequest((request, response) => {
+  var config = {
+    apiKey: "AIzaSyDmoyeSgVV4sx1XORlvIunuIHbMkwQmDds",
+    authDomain: "tn-line-hackathon.firebaseapp.com",
+    databaseURL: "https://tn-line-hackathon.firebaseio.com",
+    projectId: "tn-line-hackathon",
+    storageBucket: "tn-line-hackathon.appspot.com",
+    messagingSenderId: "737502471943"
+  };
+  if (!firebase.apps.length) {
+    firebase.initializeApp(config);
+  }
+  let result = {}
+  let app = firebase.database().ref('/daily/' + request.query.date);
+    app.on('value', snapshot => {
+      console.log(snapshot.val());
+      result = snapshot.val();
+    });
+  response.send(result);
+});
