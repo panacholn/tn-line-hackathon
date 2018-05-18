@@ -10,7 +10,7 @@ const sendMessage = (userId, message) => {
     channelAccessToken: 'PN/7gn8noRYlUzxWPNzdLtxgkDJw0AEn9Z9ywMf6sgJBa6eViStegOocpYLrBngchOZX12mcBnErf8X6tM9D1MNRPvdJyEtZhIgas4/CyVibN3vbnIM0wCZ82Xyn5wTtlACP0Xbqph2tkKM4GnqaoQdB04t89/1O/w1cDnyilFU=',
     channelSecret: 'f1b4e5c6783a0eb2f2b3e265c597871d'
   });
-  return client.multicast(userId, { type: 'text', text: message });
+  return client.pushMessage(userId, { type: 'text', text: message });
 }
 
 const getUsersId = () => new Promise(((resolve, reject) => {
@@ -25,6 +25,8 @@ const getUsersId = () => new Promise(((resolve, reject) => {
     }
   });
 }))
+
+const getUsers = () => admin.database().ref('/users').orderByValue().once('value')
 
 exports.sendNotiForReportDaily = functions.https.onRequest(() => {
   const message = 'กรุณาส่ง Daily ด้วยค่ะ'
@@ -88,3 +90,35 @@ exports.get = functions.https.onRequest((request, response) => {
     });
   response.send(result);
 });
+
+exports.notifyUnsend = functions.https.onRequest((request, response) => {
+  let lists = []
+  let sendUsers = []
+  const date = moment().format('YYYY-MM-DD')
+  admin.database().ref(`/daily/${date}`)
+  .once('value')
+  .then((dailies) => {
+    dailies.forEach((daily) => {
+      lists.push(daily.key)
+    })
+    return lists
+  })
+  .then(() => getUsers())
+  .then((usersData) => {
+    console.log(lists)
+    usersData.forEach((user) => {
+      if (!lists.includes(user.key)) {
+        sendUsers.push(sendMessage(user.key, `คุณ ${user.val().name} ส่ง daily ด้วยค่ะ`))
+      }
+    })
+    return sendUsers
+  })
+  .then(() => Promise.all(sendUsers))
+  .then(() => {
+    return response.status(200).json('success')
+  })
+  .catch(error => {
+    return response.status(500).json(error.message)
+  })
+})
+
