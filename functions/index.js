@@ -1,12 +1,42 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const moment = require('moment')
+const Client = require('@line/bot-sdk').Client;
 
 admin.initializeApp(functions.config().firebase);
 
-// // Create and Deploy Your First Cloud Functions
-// // https://firebase.google.com/docs/functions/write-firebase-functions
-//
+const sendMessage = (userId, message) => {
+  const client = new Client({
+    channelAccessToken: 'PN/7gn8noRYlUzxWPNzdLtxgkDJw0AEn9Z9ywMf6sgJBa6eViStegOocpYLrBngchOZX12mcBnErf8X6tM9D1MNRPvdJyEtZhIgas4/CyVibN3vbnIM0wCZ82Xyn5wTtlACP0Xbqph2tkKM4GnqaoQdB04t89/1O/w1cDnyilFU=',
+    channelSecret: 'f1b4e5c6783a0eb2f2b3e265c597871d'
+  });
+  return client.multicast(userId, { type: 'text', text: message });
+}
+
+const getUsersId = () => new Promise(((resolve, reject) => {
+  let result = {}
+  let app = admin.database().ref('/users')
+  app.on('value', snapshot => {
+    result = snapshot.val();
+    if (result) {
+      return resolve(Object.keys(result))
+    } else {
+      return reject(new Error('not found'))
+    }
+  });
+}))
+
+exports.sendNotiForReportDaily = functions.https.onRequest(() => {
+  const message = 'กรุณาส่ง Daily ด้วยค่ะ'
+  getUsersId()
+  .then((result) => {
+    sendMessage(result, message)
+    return
+  })
+  .catch(() => {
+    console.log('fail')
+  })
+})
 
 exports.getMessageFromLine = functions.https.onRequest((request, response) => {
   const strDate = moment().zone('+0700').format('YYYY-MM-DD');
