@@ -60,16 +60,39 @@ exports.get = functions.https.onRequest((request, response) => {
 });
 
 exports.pushMessage = functions.https.onRequest((request, response) => {
-  const client = new Client({
-    channelAccessToken: 'PN/7gn8noRYlUzxWPNzdLtxgkDJw0AEn9Z9ywMf6sgJBa6eViStegOocpYLrBngchOZX12mcBnErf8X6tM9D1MNRPvdJyEtZhIgas4/CyVibN3vbnIM0wCZ82Xyn5wTtlACP0Xbqph2tkKM4GnqaoQdB04t89/1O/w1cDnyilFU=',
-  })
-
-  const message = {
-    type: 'text',
-    text: 'ตู่\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด\n\nวัฒ\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด',
+    const data = {
+    to: 'U09470b75b2cb22d87f1a5efaa1163129',
+    messages: [
+      {
+        type: 'text',
+        text: 'ตู่\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด\n\nวัฒ\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด',
+      },
+    ],
   }
 
-  return client.pushMessage('U09470b75b2cb22d87f1a5efaa1163129', message)
-    .then(() => response.send('success'))
-    .catch((err) => response.status(500).json(err))
+  httprequest({
+    headers: {
+      'content-type': 'application/json',
+      Authorization: 'Bearer PN/7gn8noRYlUzxWPNzdLtxgkDJw0AEn9Z9ywMf6sgJBa6eViStegOocpYLrBngchOZX12mcBnErf8X6tM9D1MNRPvdJyEtZhIgas4/CyVibN3vbnIM0wCZ82Xyn5wTtlACP0Xbqph2tkKM4GnqaoQdB04t89/1O/w1cDnyilFU=',
+    },
+    url: 'https://api.line.me/v2/bot/message/push',
+    method: 'POST',
+    body: data,
+    json: true,
+  }, (err, res) => {
+    if (err) response.status(500).json(err)
+    if (res) response.status(200).json({ msg: 'success' })
+  })
+  // const client = new Client({
+  //   channelAccessToken: 'PN/7gn8noRYlUzxWPNzdLtxgkDJw0AEn9Z9ywMf6sgJBa6eViStegOocpYLrBngchOZX12mcBnErf8X6tM9D1MNRPvdJyEtZhIgas4/CyVibN3vbnIM0wCZ82Xyn5wTtlACP0Xbqph2tkKM4GnqaoQdB04t89/1O/w1cDnyilFU=',
+  // })
+
+  // const message = {
+  //   type: 'text',
+  //   text: 'ตู่\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด\n\nวัฒ\nเมื่อวาน: กินเหล้า\nวันนี้: นอน\nปัญหา: ตังหมด',
+  // }
+
+  // return client.pushMessage('U09470b75b2cb22d87f1a5efaa1163129', message)
+  //   .then(() => response.send('success'))
+  //   .catch((err) => response.status(500).json(err))
 });
